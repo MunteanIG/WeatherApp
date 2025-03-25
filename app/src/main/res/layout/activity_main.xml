@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="20dp">
+
+    <!-- Search Bar -->
+    <EditText
+        android:id="@+id/etSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Caută un oraș..."
+        android:inputType="textCapWords"
+        android:padding="12dp"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Card pentru vremea curentă -->
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/etSearch"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:gravity="center">
+
+            <!-- Oraș + Dată -->
+            <TextView
+                android:id="@+id/tvCity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="București"
+                android:textSize="24sp"
+                android:textColor="#000"/>
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="26 martie 2023"
+                android:textSize="16sp"
+                android:layout_marginTop="4dp"/>
+
+            <!-- Iconiță + Temperatură -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
+
+                <ImageView
+                    android:id="@+id/ivWeatherIcon"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@drawable/ic_sun"/>
+
+                <TextView
+                    android:id="@+id/tvTemperature"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="25°C"
+                    android:textSize="48sp"
+                    android:layout_gravity="center"/>
+            </LinearLayout>
+
+            <!-- Descriere -->
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cer senin"
+                android:textSize="18sp"
+                android:layout_marginTop="8dp"/>
+
+            <!-- Detalii suplimentare -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp"
+                android:gravity="space-around">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_humidity"/>
+
+                    <TextView
+                        android:id="@+id/tvHumidity"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="60%"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@drawable/ic_wind"/>
+
+                    <TextView
+                        android:id="@+id/tvWind"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="10 km/h"
+                        android:layout_marginTop="4dp"/>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Butoane pentru navigare -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="20dp">
+
+        <Button
+            android:id="@+id/btnForecast"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Prognoza"
+            android:backgroundTint="#6200EE"
+            android:textColor="#FFF"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/btnSettings"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Setări"
+            android:backgroundTint="#03DAC5"
+            android:textColor="#000"/>
+    </LinearLayout>
+
+</RelativeLayout>
