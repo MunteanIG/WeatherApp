@@ -27,6 +27,10 @@ public class WeatherResponse {
         public double getTemp() {
             return temp;
         }
+
+        public int getHumidity() {
+            return humidity;
+        }
     }
 
     public static class Weather {
@@ -36,5 +40,24 @@ public class WeatherResponse {
         public String getDescription() {
             return description;
         }
+
+        public String getIcon() {
+            return icon;
+        }
+    }
+
+    private Wind wind;
+
+    public static class Wind {
+        private double speed; // viteza în m/s
+
+        public double getSpeed() {
+            return speed;
+        }
+    }
+
+    // Getter pentru wind
+    public Wind getWind() {
+        return wind;
     }
 }
