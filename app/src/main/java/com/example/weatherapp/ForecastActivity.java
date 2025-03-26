@@ -19,9 +19,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class ForecastActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
@@ -50,19 +55,54 @@ public class ForecastActivity extends AppCompatActivity {
             if (forecastResponse != null) {
                 tvCity.setText(forecastResponse.getCity().getName());
 
-                // Filtrează pentru a afișa doar o prognoză pe zi (la ora 12:00 de exemplu)
+                // Procesează datele pentru 7 zile
                 List<ForecastResponse.ForecastItem> dailyForecasts = new ArrayList<>();
-                for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
-                    // Verifică dacă este ora 12:00
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(item.getDt() * 1000);
-                    if (calendar.get(Calendar.HOUR_OF_DAY) == 12) {
-                        dailyForecasts.add(item);
+                Map<String, ForecastResponse.ForecastItem> dayMap = new HashMap<>();
+
+                Calendar calendar = Calendar.getInstance();
+                calendar.add(Calendar.DAY_OF_YEAR, 1); // Începe de mâine
+
+                // Parcurge fiecare zi din următoarele 7 zile
+                for (int i = 0; i < 7; i++) {
+                    String currentDay = getDayString(calendar.getTime());
+
+                    // Găsește toate prognozele pentru ziua curentă
+                    List<ForecastResponse.ForecastItem> dayForecasts = new ArrayList<>();
+                    for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
+                        String itemDay = getDayString(new Date(item.getDt() * 1000));
+                        if (itemDay.equals(currentDay)) {
+                            dayForecasts.add(item);
+                        }
                     }
+
+                    // Calculează min și max pentru ziua respectivă
+                    if (!dayForecasts.isEmpty()) {
+                        double minTemp = Double.MAX_VALUE;
+                        double maxTemp = Double.MIN_VALUE;
+                        ForecastResponse.ForecastItem representativeItem = dayForecasts.get(0);
+
+                        for (ForecastResponse.ForecastItem item : dayForecasts) {
+                            if (item.getMain().getTemp() < minTemp) {
+                                minTemp = item.getMain().getTemp();
+                            }
+                            if (item.getMain().getTemp() > maxTemp) {
+                                maxTemp = item.getMain().getTemp();
+                            }
+                        }
+
+                        // Setează temperaturile min și max în obiect
+                        representativeItem.getMain().setTempMin(minTemp);
+                        representativeItem.getMain().setTempMax(maxTemp);
+                        dailyForecasts.add(representativeItem);
+                    }
+
+                    calendar.add(Calendar.DAY_OF_YEAR, 1); // Trece la următoarea zi
                 }
+
                 adapter.updateData(dailyForecasts);
             }
         });
+
 
         // Observă mesajele de eroare
         viewModel.getErrorMessage().observe(this, errorMessage -> {
@@ -94,4 +134,9 @@ public class ForecastActivity extends AppCompatActivity {
             }
         }
     }
+    private String getDayString(Date date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(date);
+    }
+
 }

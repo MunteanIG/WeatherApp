@@ -21,6 +21,8 @@ public class ForecastResponse {
         private List<WeatherResponse.Weather> weather;
         private WeatherResponse.Wind wind;
 
+        private double temp;
+
         // Getters
         public long getDt() {
             return dt;

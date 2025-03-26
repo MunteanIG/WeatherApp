@@ -28,6 +28,28 @@ public class WeatherResponse {
         private double temp;
         private double feelsLike;  // Changed to camelCase
         private int humidity;
+        private double tempMin;
+        private double tempMax;
+        // ... (alte câmpuri existente)
+
+        // Adaugă gettere și settere
+        public double getTempMin() {
+            return tempMin;
+        }
+
+        public void setTempMin(double tempMin) {
+            this.tempMin = tempMin;
+        }
+
+        public double getTempMax() {
+            return tempMax;
+        }
+
+        public void setTempMax(double tempMax) {
+            this.tempMax = tempMax;
+        }
+
+
 
         public double getTemp() {
             return temp;

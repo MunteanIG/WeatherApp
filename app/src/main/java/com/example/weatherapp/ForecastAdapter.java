@@ -36,19 +36,26 @@ public class ForecastAdapter extends RecyclerView.Adapter<ForecastAdapter.Foreca
     public void onBindViewHolder(@NonNull ForecastViewHolder holder, int position) {
         ForecastResponse.ForecastItem item = forecastItems.get(position);
 
-        // Formatare data
-        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM", Locale.getDefault());
+        // Formatare data în română
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM", new Locale("ro", "RO"));
         String date = sdf.format(new Date(item.getDt() * 1000));
+        // Capitalizează prima literă
+        date = date.substring(0, 1).toUpperCase() + date.substring(1);
         holder.tvDate.setText(date);
 
-        // Temperatura
-        String temp = String.format(Locale.getDefault(), "%.1f°C", item.getMain().getTemp());
+        // Afișează temperatura minimă și maximă
+        String temp = String.format(Locale.getDefault(), "%.0f° / %.0f°",
+                item.getMain().getTempMin(),
+                item.getMain().getTempMax());
         holder.tvTemp.setText(temp);
 
         // Descriere și iconiță
         if (!item.getWeather().isEmpty()) {
             WeatherResponse.Weather weather = item.getWeather().get(0);
-            holder.tvDescription.setText(weather.getDescription());
+            // Capitalizează prima literă a descrierii
+            String description = weather.getDescription();
+            description = description.substring(0, 1).toUpperCase() + description.substring(1);
+            holder.tvDescription.setText(description);
 
             String iconCode = weather.getIcon();
             int iconResId = context.getResources().getIdentifier(
