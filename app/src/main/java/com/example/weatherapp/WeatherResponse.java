@@ -62,9 +62,5 @@ public class WeatherResponse {
             return speed;
         }
 
-        // Optional: Add method to convert to km/h
-        public double getSpeedKmh() {
-            return speed * 3.6;
-        }
     }
 }

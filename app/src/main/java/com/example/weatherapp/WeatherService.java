@@ -9,4 +9,11 @@ public interface WeatherService {
             @Query("q") String city,  // Orașul (ex: "București")
             @Query("appid") String apiKey  // Cheia ta de API
     );
+
+    @GET("weather?units=metric")
+    Call<WeatherResponse> getWeatherByCoordinates(
+            @Query("lat") double lat,
+            @Query("lon") double lon,
+            @Query("appid") String apiKey
+    );
 }
