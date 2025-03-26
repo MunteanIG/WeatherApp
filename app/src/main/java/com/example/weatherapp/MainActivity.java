@@ -120,7 +120,12 @@ public class MainActivity extends AppCompatActivity {
 
         // Buton prognoză
         btnForecast.setOnClickListener(v -> {
-            startActivity(new Intent(this, ForecastActivity.class));
+            Intent intent = new Intent(this, ForecastActivity.class);
+            // Trimite orașul curent sau cel căutat
+            if (tvCity.getText() != null && !tvCity.getText().toString().isEmpty()) {
+                intent.putExtra("city", tvCity.getText().toString());
+            }
+            startActivity(intent);
         });
 
         // Buton setări

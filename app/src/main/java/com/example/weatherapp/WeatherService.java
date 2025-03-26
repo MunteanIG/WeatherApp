@@ -16,4 +16,17 @@ public interface WeatherService {
             @Query("lon") double lon,
             @Query("appid") String apiKey
     );
+
+    @GET("forecast?units=metric")
+    Call<ForecastResponse> getFiveDayForecast(
+            @Query("q") String city,
+            @Query("appid") String apiKey
+    );
+
+    @GET("forecast?units=metric")
+    Call<ForecastResponse> getFiveDayForecastByCoordinates(
+            @Query("lat") double lat,
+            @Query("lon") double lon,
+            @Query("appid") String apiKey
+    );
 }

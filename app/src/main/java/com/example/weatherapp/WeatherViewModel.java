@@ -77,4 +77,65 @@ public class WeatherViewModel extends ViewModel {
             }
         });
     }
+
+
+    /************************************************************* FORECAST *************************************************************/
+
+    private MutableLiveData<ForecastResponse> forecastData = new MutableLiveData<>();
+
+    public LiveData<ForecastResponse> getForecastData() {
+        return forecastData;
+    }
+
+    public void fetchFiveDayForecast(String city) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.openweathermap.org/data/2.5/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        WeatherService service = retrofit.create(WeatherService.class);
+        Call<ForecastResponse> call = service.getFiveDayForecast(city, API_KEY);
+
+        call.enqueue(new Callback<ForecastResponse>() {
+            @Override
+            public void onResponse(Call<ForecastResponse> call, Response<ForecastResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    forecastData.postValue(response.body());
+                } else {
+                    errorMessage.postValue("Orașul nu a fost găsit!");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ForecastResponse> call, Throwable t) {
+                errorMessage.postValue("Eroare de rețea: " + t.getMessage());
+            }
+        });
+    }
+
+    public void fetchFiveDayForecastByLocation(double lat, double lon) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.openweathermap.org/data/2.5/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        WeatherService service = retrofit.create(WeatherService.class);
+        Call<ForecastResponse> call = service.getFiveDayForecastByCoordinates(lat, lon, API_KEY);
+
+        call.enqueue(new Callback<ForecastResponse>() {
+            @Override
+            public void onResponse(Call<ForecastResponse> call, Response<ForecastResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    forecastData.postValue(response.body());
+                } else {
+                    errorMessage.postValue("Locația nu este validă");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ForecastResponse> call, Throwable t) {
+                errorMessage.postValue("Eroare la obținerea prognozei");
+            }
+        });
+    }
 }
