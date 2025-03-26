@@ -1,9 +1,8 @@
 package com.example.weatherapp;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
@@ -11,14 +10,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -26,14 +21,11 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements RecentCitiesAdapter.OnCityClickListener {
+public class MainActivity extends AppCompatActivity {
     private EditText etSearch;
     private TextView tvCity, tvDate, tvTemperature, tvDescription, tvHumidity, tvWind;
     private ImageView ivWeatherIcon;
     private Button btnForecast, btnSettings;
-
-    private RecyclerView rvRecentCities;
-    private RecentCitiesAdapter adapter;
 
 
 
@@ -55,30 +47,22 @@ public class MainActivity extends AppCompatActivity implements RecentCitiesAdapt
         btnForecast = findViewById(R.id.btnForecast);
         btnSettings = findViewById(R.id.btnSettings);
 
-        // RecyclerView pentru orașe recente
-        rvRecentCities = findViewById(R.id.rvRecentCities);
-        rvRecentCities.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RecentCitiesAdapter(new ArrayList<>(), this);
-        rvRecentCities.setAdapter(adapter);
+        // Încarcă ultimul oraș salvat (dacă există)
+        SharedPreferences prefs = getSharedPreferences("weatherPrefs", MODE_PRIVATE);
+        String lastCity = prefs.getString("lastCity", "București"); // "București" e valoarea implicită
 
-        // Afișează orașe recente la focus pe câmpul de căutare
-        etSearch.setOnFocusChangeListener((v, hasFocus) -> {
-            if (hasFocus) loadRecentCities();
-        });
+        // Încarcă vremea pentru ultimul oraș salvat
+        fetchWeatherData(lastCity);
 
         // Căutare la click pe buton
         btnSearch.setOnClickListener(v -> {
             String city = etSearch.getText().toString().trim();
             if (!city.isEmpty()) {
                 fetchWeatherData(city);  // Încarcă vremea pentru orașul introdus
-                rvRecentCities.setVisibility(View.GONE);  // Ascunde lista de orașe recente
             } else {
                 Toast.makeText(this, "Introdu un oraș!", Toast.LENGTH_SHORT).show();
             }
         });
-
-
-
 
         // Setare dată curentă
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
@@ -100,38 +84,14 @@ public class MainActivity extends AppCompatActivity implements RecentCitiesAdapt
         btnForecast.setOnClickListener(v -> startActivity(new Intent(this, ForecastActivity.class)));
         btnSettings.setOnClickListener(v -> startActivity(new Intent(this, SettingsActivity.class)));
 
-        // Încarcă date inițiale
-        fetchWeatherData("București");
-    }
-
-    private void loadRecentCities() {
-        Set<String> cities = PrefsHelper.getRecentCities(this);
-        Log.d("CITIES", "Orașe salvate: " + cities); // Debugging
-
-        if (!cities.isEmpty()) {
-            adapter = new RecentCitiesAdapter(new ArrayList<>(cities), this);
-            rvRecentCities.setAdapter(adapter);
-            rvRecentCities.setVisibility(View.VISIBLE);
-        } else {
-            rvRecentCities.setVisibility(View.GONE);
-        }
-    }
-    @Override
-    public void onCityDeleted(String city) {
-        // Șterge orașul din SharedPreferences
-        PrefsHelper.removeRecentCity(this, city);
-        Toast.makeText(this, "Oraș șters: " + city, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onCityClick(String city) {
-        etSearch.setText(city);
-        fetchWeatherData(city);
-        rvRecentCities.setVisibility(View.GONE);
     }
 
     private void fetchWeatherData(String city) {
-        PrefsHelper.saveRecentCity(this, city);
+
+        SharedPreferences prefs = getSharedPreferences("weatherPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("lastCity", city); // Cheia este "lastCity", valoarea este orașul introdus
+        editor.apply(); // Salvarea este asincronă (folosește apply() în loc de commit() pentru performanță)
 
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.openweathermap.org/data/2.5/")
@@ -145,7 +105,6 @@ public class MainActivity extends AppCompatActivity implements RecentCitiesAdapt
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
                 if (response.isSuccessful()) {
-                    PrefsHelper.saveRecentCity(MainActivity.this, city); // Salvează doar după succes
                     updateUI(response.body());
                 }
             }
