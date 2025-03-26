@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Location;
 import android.os.Bundle;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
@@ -24,13 +23,15 @@ import com.google.android.gms.location.LocationServices;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private EditText etSearch;
     private TextView tvCity, tvDate, tvTemperature, tvDescription, tvHumidity, tvWind;
     private ImageView ivWeatherIcon;
-    private Button btnForecast, btnSettings;
+    private Button btnForecast, btnAddFavorite,  btnFavorites;
 
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
@@ -65,7 +66,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void initViews() {
         etSearch = findViewById(R.id.etSearch);
-        Button btnSearch = findViewById(R.id.btnSearch);
         tvCity = findViewById(R.id.tvCity);
         tvDate = findViewById(R.id.tvDate);
         tvTemperature = findViewById(R.id.tvTemperature);
@@ -74,7 +74,8 @@ public class MainActivity extends AppCompatActivity {
         tvWind = findViewById(R.id.tvWind);
         ivWeatherIcon = findViewById(R.id.ivWeatherIcon);
         btnForecast = findViewById(R.id.btnForecast);
-        btnSettings = findViewById(R.id.btnSettings);
+        btnAddFavorite = findViewById(R.id.btnAddFavorite);
+        btnFavorites = findViewById(R.id.btnFavorites);
     }
 
     private void setCurrentDate() {
@@ -128,9 +129,18 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        btnAddFavorite.setOnClickListener(v -> {
+            if (tvCity.getText() != null && !tvCity.getText().toString().isEmpty()) {
+                String cityName = tvCity.getText().toString();
+                // Salvează orașul în lista de favorite (SharedPreferences sau baza de date)
+                saveFavoriteCity(cityName);
+                Toast.makeText(this, cityName + " a fost adăugat la favorite", Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Buton setări
-        btnSettings.setOnClickListener(v -> {
-            startActivity(new Intent(this, SettingsActivity.class));
+        btnFavorites.setOnClickListener(v -> {
+            startActivity(new Intent(this, FavoritesActivity.class));
         });
     }
 
@@ -228,5 +238,19 @@ public class MainActivity extends AppCompatActivity {
         );
 
         ivWeatherIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_unknown);
+    }
+
+    // Metoda helper pentru salvarea orașelor favorite
+    private void saveFavoriteCity(String cityName) {
+        SharedPreferences prefs = getSharedPreferences("WeatherPrefs", MODE_PRIVATE);
+        // 1. Obține setul existent (sau unul nou)
+        Set<String> existingFavorites = prefs.getStringSet("favoriteCities", new HashSet<>());
+
+        // 2. Creează un NOU set (nu modifica pe cel existent direct!)
+        Set<String> updatedFavorites = new HashSet<>(existingFavorites);
+        updatedFavorites.add(cityName);
+
+        // 3. Salvează noul set
+        prefs.edit().putStringSet("favoriteCities", updatedFavorites).apply();
     }
 }

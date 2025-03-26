@@ -52,6 +52,8 @@ public class WeatherViewModel extends ViewModel {
         });
     }
 
+
+
     public void fetchWeatherByLocation(double lat, double lon) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://api.openweathermap.org/data/2.5/")
@@ -76,6 +78,37 @@ public class WeatherViewModel extends ViewModel {
                 errorMessage.postValue("Eroare la obținerea vremii");
             }
         });
+    }
+
+    public void fetchWeatherDataFavorite(String city, WeatherCallback callback) {
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.openweathermap.org/data/2.5/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        WeatherService service = retrofit.create(WeatherService.class);
+        Call<WeatherResponse> call = service.getCurrentWeather(city, API_KEY);
+
+        call.enqueue(new Callback<WeatherResponse>() {
+            @Override
+            public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    callback.onSuccess(response.body());
+                } else {
+                    callback.onFailure("Orașul nu a fost găsit!");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<WeatherResponse> call, Throwable t) {
+                callback.onFailure("Eroare de rețea: " + t.getMessage());
+            }
+        });
+    }
+
+    public interface WeatherCallback {
+        void onSuccess(WeatherResponse response);
+        void onFailure(String error);
     }
 
 

@@ -171,6 +171,16 @@
         android:layout_marginTop="20dp">
 
         <Button
+            android:id="@+id/btnAddFavorite"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Adauga la Favorite"
+            android:backgroundTint="#03DAC5"
+            android:textColor="#000"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
             android:id="@+id/btnForecast"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -181,11 +191,11 @@
             android:layout_marginEnd="8dp"/>
 
         <Button
-            android:id="@+id/btnSettings"
+            android:id="@+id/btnFavorites"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Setări"
+            android:text="Orase Favorite"
             android:backgroundTint="#03DAC5"
             android:textColor="#000"/>
     </LinearLayout>
