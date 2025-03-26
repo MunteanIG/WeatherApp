@@ -45,5 +45,9 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.retrofit.gson)
 
-    implementation (libs.play.services.location)
+    implementation(libs.play.services.location)
+
+    implementation(libs.lifecycle.viewmodel)
+    implementation(libs.lifecycle.livedata)
+    annotationProcessor(libs.lifecycle.compiler)
 }
