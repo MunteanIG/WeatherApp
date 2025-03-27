@@ -29,6 +29,9 @@ import java.util.Locale;
 import java.util.Map;
 
 public class ForecastActivity extends AppCompatActivity {
+
+    /* Elemente UI */
+
     private RecyclerView recyclerView;
     private ForecastAdapter adapter;
     private WeatherViewModel viewModel;
@@ -39,34 +42,33 @@ public class ForecastActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forecast);
 
-        // Inițializare componente
+        /* Initializari */
+
         tvCity = findViewById(R.id.tvForecastCity);
         recyclerView = findViewById(R.id.rvForecast);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
         adapter = new ForecastAdapter(new ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
-
-        // Inițializare ViewModel
         viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
 
-        // Observă datele de prognoză
+        /* Config observatori vreme forecast*/
+
         viewModel.getForecastData().observe(this, forecastResponse -> {
             if (forecastResponse != null) {
                 tvCity.setText(forecastResponse.getCity().getName());
 
-                // Procesează datele pentru 7 zile
+                // Datele pentru 5 zile
                 List<ForecastResponse.ForecastItem> dailyForecasts = new ArrayList<>();
                 Map<String, ForecastResponse.ForecastItem> dayMap = new HashMap<>();
 
                 Calendar calendar = Calendar.getInstance();
-                calendar.add(Calendar.DAY_OF_YEAR, 1); // Începe de mâine
+                calendar.add(Calendar.DAY_OF_YEAR, 1);
 
-                // Parcurge fiecare zi din următoarele 7 zile
-                for (int i = 0; i < 7; i++) {
+                // Parcurge fiecare zi
+                for (int i = 0; i < 5; i++) {
                     String currentDay = getDayString(calendar.getTime());
 
-                    // Găsește toate prognozele pentru ziua curentă
+                    // Gaseste toate prognozele pentru ziua curenta
                     List<ForecastResponse.ForecastItem> dayForecasts = new ArrayList<>();
                     for (ForecastResponse.ForecastItem item : forecastResponse.getList()) {
                         String itemDay = getDayString(new Date(item.getDt() * 1000));
@@ -75,7 +77,7 @@ public class ForecastActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Calculează min și max pentru ziua respectivă
+                    // Temperatura minima si maxima pentru ziua curenta
                     if (!dayForecasts.isEmpty()) {
                         double minTemp = Double.MAX_VALUE;
                         double maxTemp = Double.MIN_VALUE;
@@ -89,14 +91,12 @@ public class ForecastActivity extends AppCompatActivity {
                                 maxTemp = item.getMain().getTemp();
                             }
                         }
-
-                        // Setează temperaturile min și max în obiect
                         representativeItem.getMain().setTempMin(minTemp);
                         representativeItem.getMain().setTempMax(maxTemp);
                         dailyForecasts.add(representativeItem);
                     }
 
-                    calendar.add(Calendar.DAY_OF_YEAR, 1); // Trece la următoarea zi
+                    calendar.add(Calendar.DAY_OF_YEAR, 1);
                 }
 
                 adapter.updateData(dailyForecasts);
@@ -104,17 +104,16 @@ public class ForecastActivity extends AppCompatActivity {
         });
 
 
-        // Observă mesajele de eroare
+        // Tratare erori
         viewModel.getErrorMessage().observe(this, errorMessage -> {
             Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
         });
 
-        // Obține prognoza
+        // Obtinere prognoza
         String city = getIntent().getStringExtra("city");
         if (city != null) {
             viewModel.fetchFiveDayForecast(city);
         } else {
-            // Încearcă să obții locația curentă sau folosește orașul implicit
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 FusedLocationProviderClient fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
