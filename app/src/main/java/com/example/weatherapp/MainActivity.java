@@ -28,41 +28,37 @@ import java.util.Locale;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
+
+    /* Elemente UI */
+
     private EditText etSearch;
     private TextView tvCity, tvDate, tvTemperature, tvDescription, tvHumidity, tvWind;
     private ImageView ivWeatherIcon;
     private Button btnForecast, btnAddFavorite,  btnFavorites;
 
-    private FusedLocationProviderClient fusedLocationClient;
+    /* Serviciu de locatie si vreme */
+
+    private FusedLocationProviderClient fusedLocationClient; 
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private WeatherViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main); // Setare layout
 
-        // Inițializare componente UI
-        initViews();
+        /* Initializari */
 
-        // Inițializare ViewModel
-        viewModel = new ViewModelProvider(this).get(WeatherViewModel.class);
-
-        // Inițializare serviciu locație
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
-        // Setare data curentă
-        setCurrentDate();
-
-        // Observare schimbări în datele de vreme
-        setupWeatherObservers();
-
-        // Setare listener butoane
-        setupButtonListeners();
-
-        // Încărcare ultim oraș sau locație curentă
-        loadInitialData();
+        initViews(); // Initializare UI
+        viewModel = new ViewModelProvider(this).get(WeatherViewModel.class); // Initializare ViewModel 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this); // Initializare serviciu locatie
+        setCurrentDate(); // Setare data
+        setupWeatherObservers(); // Schimbari de vreme 
+        setupButtonListeners(); // Listneri butoane
+        loadInitialData(); // Incarcare date initiale 
     }
+
+    /* Inițializare componente UI */
 
     private void initViews() {
         etSearch = findViewById(R.id.etSearch);
@@ -78,26 +74,36 @@ public class MainActivity extends AppCompatActivity {
         btnFavorites = findViewById(R.id.btnFavorites);
     }
 
+    /* Afisare data curenta in format dd MM yyyy */
+
     private void setCurrentDate() {
         SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy", Locale.getDefault());
         tvDate.setText(sdf.format(new Date()));
     }
 
+    /* Config observatori vreme */
+
     private void setupWeatherObservers() {
+
+        // Observer modificari meteo
         viewModel.getWeatherData().observe(this, weatherResponse -> {
             if (weatherResponse != null) {
-                updateUI(weatherResponse);
-                saveLastCity(weatherResponse.getName());
+                updateUI(weatherResponse); // Actualizarea UI
+                saveLastCity(weatherResponse.getName()); // Salvare oras pt. utilizari viitoare
             }
         });
 
+        // Tratare erori
         viewModel.getErrorMessage().observe(this, errorMessage -> {
             Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
         });
     }
 
+    /* Config listeneri butoane */
+
     private void setupButtonListeners() {
-        // Buton căutare
+
+        /* Buton Cautare */
         findViewById(R.id.btnSearch).setOnClickListener(v -> {
             String city = etSearch.getText().toString().trim();
             if (!city.isEmpty()) {
@@ -107,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Căutare din tastatură
+
+        /* Cautare din camp */
         etSearch.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_SEARCH) {
                 String city = etSearch.getText().toString().trim();
@@ -119,34 +126,37 @@ public class MainActivity extends AppCompatActivity {
             return false;
         });
 
-        // Buton prognoză
+        /* Buton Prognoza */
         btnForecast.setOnClickListener(v -> {
             Intent intent = new Intent(this, ForecastActivity.class);
-            // Trimite orașul curent sau cel căutat
             if (tvCity.getText() != null && !tvCity.getText().toString().isEmpty()) {
                 intent.putExtra("city", tvCity.getText().toString());
             }
             startActivity(intent);
         });
 
+        /* Buton Adaugare Favorite */
         btnAddFavorite.setOnClickListener(v -> {
             if (tvCity.getText() != null && !tvCity.getText().toString().isEmpty()) {
                 String cityName = tvCity.getText().toString();
-                // Salvează orașul în lista de favorite (SharedPreferences sau baza de date)
                 saveFavoriteCity(cityName);
                 Toast.makeText(this, cityName + " a fost adăugat la favorite", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // Buton setări
+        /* Buton Favorite */
         btnFavorites.setOnClickListener(v -> {
             startActivity(new Intent(this, FavoritesActivity.class));
         });
     }
 
+    /* Incarcare date initiale */
+
     private void loadInitialData() {
         checkLocationPermission();
     }
+
+    /* Incarcare date initiale in functie de Permisiuni */    
 
     private void checkLocationPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
@@ -158,6 +168,8 @@ public class MainActivity extends AppCompatActivity {
                     LOCATION_PERMISSION_REQUEST_CODE);
         }
     }
+
+    /* Metoda apelata dupa raspuns permisiune locatie */
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -171,24 +183,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /* Obtinere ultima locatie */
+
     private void getLastLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
                 == PackageManager.PERMISSION_GRANTED) {
             fusedLocationClient.getLastLocation()
                     .addOnSuccessListener(this, location -> {
                         if (location != null) {
-                            // 1. Încerci să obții locația curentă
+                            // Locatie curenta prin permisiune
                             viewModel.fetchWeatherByLocation(
                                     location.getLatitude(),
                                     location.getLongitude()
                             );
                         } else {
-                            // 2. Dacă locația curentă nu e disponibilă, încerci ultimul oraș salvat
+                            // Locatie negasita, afisare ultimul oras salvat
                             tryFallbackToSavedCity();
                         }
                     })
                     .addOnFailureListener(e -> {
-                        // 2. Dacă apare eroare, încerci ultimul oraș salvat
+                        // Ultimul oras salvat
                         tryFallbackToSavedCity();
                     });
         } else {
@@ -197,30 +211,35 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /* Metoda locatie neobtinuta */
+
     private void tryFallbackToSavedCity() {
         SharedPreferences prefs = getSharedPreferences("weatherPrefs", MODE_PRIVATE);
         String lastCity = prefs.getString("lastCity", null);
 
         if (lastCity != null && !lastCity.isEmpty()) {
-            // 2a. Folosești ultimul oraș salvat
-            viewModel.fetchWeatherData(lastCity);
+            viewModel.fetchWeatherData(lastCity); // Foloseste ultimul oras salvat
         } else {
-            // 3. Dacă nici oraș salvat nu există, folosești București
-            viewModel.fetchWeatherData("București");
+            viewModel.fetchWeatherData("București"); // Foloseste orasul implicit
         }
     }
+
+    /* Incarcare oras implicit */
 
     private void loadDefaultCity() {
         viewModel.fetchWeatherData("București");
     }
 
+    /* Salvarea ultimului oras cautat */
+
     private void saveLastCity(String city) {
-        // Salvezi doar dacă orașul a fost căutat manual
         if (!city.equals("București") && !city.isEmpty()) {
             SharedPreferences prefs = getSharedPreferences("weatherPrefs", MODE_PRIVATE);
             prefs.edit().putString("lastCity", city).apply();
         }
     }
+
+    /* Actualizare UI cu datele meteo primite */
 
     private void updateUI(WeatherResponse data) {
         tvCity.setText(data.getName());
@@ -237,20 +256,18 @@ public class MainActivity extends AppCompatActivity {
                 getPackageName()
         );
 
-        ivWeatherIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_unknown);
+        ivWeatherIcon.setImageResource(iconResId != 0 ? iconResId : R.drawable.ic_unknown); // Setare inconita ? daca nu e gasita
     }
 
-    // Metoda helper pentru salvarea orașelor favorite
+    /* Salvare oras in favorite */
+
     private void saveFavoriteCity(String cityName) {
         SharedPreferences prefs = getSharedPreferences("WeatherPrefs", MODE_PRIVATE);
-        // 1. Obține setul existent (sau unul nou)
         Set<String> existingFavorites = prefs.getStringSet("favoriteCities", new HashSet<>());
 
-        // 2. Creează un NOU set (nu modifica pe cel existent direct!)
         Set<String> updatedFavorites = new HashSet<>(existingFavorites);
         updatedFavorites.add(cityName);
 
-        // 3. Salvează noul set
         prefs.edit().putStringSet("favoriteCities", updatedFavorites).apply();
     }
 }
